@@ -404,7 +404,7 @@ class NotehubPlugin(Plugin):
             ),
             "version": "1.0.0",
             "author": "Chris Lee / SEM-SEG",
-            "url": "https://github.com/your-org/OTS-Notehub-Plugin",
+            "url": "https://github.com/osh-labs/TAK-Note",
         }
 
     # ------------------------------------------------------------------

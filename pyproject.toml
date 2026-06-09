@@ -2,11 +2,11 @@
 name = "OTS-Notehub-Plugin"
 version = "0.0.0"
 description = "Blues Wireless Notehub integration plugin for OpenTAKServer"
-authors = ["Chris Lee <your@email.com>"]
+authors = ["Chris Lee <chris@southeastexpeditionmed.com>"]
 license = "GPL-3.0"
 readme = "README.md"
-homepage = "https://github.com/your-org/OTS-Notehub-Plugin"
-repository = "https://github.com/your-org/OTS-Notehub-Plugin"
+homepage = "https://github.com/osh-labs/TAK-Note"
+repository = "https://github.com/osh-labs/TAK-Note"
 keywords = ["opentakserver", "atak", "blues wireless", "notecard", "notehub", "cot", "tak"]
 packages = [{include = "ots_notehub_plugin"}]
 
@@ -61,6 +61,10 @@ requires = [
     "poetry-dynamic-versioning>=1.0.0,<2.0.0",
 ]
 build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "stubs"]
 
 [tool.black]
 line-length = 100
