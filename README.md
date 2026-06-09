@@ -1,6 +1,13 @@
-# OTS-Notehub-Plugin
+# TAK-Note
 
-OpenTAKServer plugin that ingests [Blues Wireless](https://blues.com) Notecard telemetry from [Notehub.io](https://notehub.io) and publishes it as Cursor-on-Target (CoT) messages visible on ATAK, WinTAK, and iTAK EUDs.
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+
+**TAK-Note** is an [OpenTAKServer](https://opentakserver.io) plugin that bridges [Blues Wireless](https://blues.com) Notecard IoT hardware with TAK-family situational awareness tools. It ingests device telemetry from [Notehub.io](https://notehub.io) and publishes each event as a Cursor-on-Target (CoT) message, making Notecard-equipped assets visible on ATAK, WinTAK, and iTAK EUDs in real time.
+
+Notecards are compact, low-power cellular and satellite modems designed for remote environments where power and connectivity are limited. This plugin is aimed at teams that already operate a TAK common operating picture and want to add Notecard-equipped personnel, vehicles, or sensors to it — without additional infrastructure or a SIM management contract.
+
+Developed and maintained by [Chris Lee](https://github.com/osh-labs) at [OSH-Labs](https://github.com/osh-labs). Released as free software under the GNU General Public License v3.
 
 ---
 
@@ -46,7 +53,7 @@ Notehub.io
 ## Installation
 
 ```bash
-~/.opentakserver_venv/bin/pip install git+https://github.com/your-org/OTS-Notehub-Plugin.git
+~/.opentakserver_venv/bin/pip install git+https://github.com/osh-labs/TAK-Note.git
 ```
 
 After installation, restart OpenTAKServer.  The plugin will appear in the OTS web UI under Plugins.
@@ -83,8 +90,10 @@ OTS_NOTEHUB_PLUGIN_WEBHOOK_SECRET: ""         # shared secret for webhook auth
 
 Restart OTS after editing config.yml:
 ```bash
-sudo systemctl restart opentakserver cot_parser eud_handler eud_handler_ssl
+sudo systemctl restart opentakserver
 ```
+
+> **Note:** Only the `opentakserver` process loads plugins. The `cot_parser`, `eud_handler`, and `eud_handler_ssl` services do not need to restart for plugin configuration changes — they communicate with the plugin via RabbitMQ and do not import plugin code directly.
 
 ---
 
@@ -235,8 +244,14 @@ Returns a JSON object with non-sensitive plugin configuration and polling state.
 ## Development / Build
 
 ```bash
-git clone https://github.com/your-org/OTS-Notehub-Plugin.git
-cd OTS-Notehub-Plugin
+git clone https://github.com/osh-labs/TAK-Note.git
+cd TAK-Note
+
+# Install Poetry dependencies (includes pytest, black, and dev extras)
+poetry install --extras dev
+
+# Run the test suite
+poetry run pytest
 
 # Install in development mode into the OTS venv
 ~/.opentakserver_venv/bin/pip install -e ".[dev]"
@@ -247,6 +262,24 @@ poetry build
 
 ---
 
+## Contributing
+
+Contributions are welcome. To get started:
+
+1. Fork the repository and clone your fork
+2. Install development dependencies: `poetry install --extras dev`
+3. Make your changes on a feature branch
+4. Ensure the test suite passes: `poetry run pytest`
+5. Open a pull request against `main` with a clear description of the change
+
+Please open an issue before starting significant work so we can discuss the approach. All contributions must be compatible with the GPL-3.0 license.
+
+---
+
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE)
+Copyright (C) 2024 Chris Lee / OSH-Labs
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html) for more details.
