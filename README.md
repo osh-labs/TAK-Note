@@ -71,7 +71,21 @@ After installation, restart OpenTAKServer.  The plugin will appear in the OTS we
 
 ## Configuration
 
-Edit `~/ots/config.yml` and add the following block.  Only the first three keys are required.
+### Via the web UI
+
+Navigate to the settings page in your browser:
+
+```
+http://<ots-host>/api/notehub/ui
+```
+
+The page loads the current values from `~/ots/config.yml`, validates your input, and writes changes back when you click **Save Settings**.  After saving, restart OTS to apply the new configuration.
+
+> **OTS Plugin tab:** When the OTS project implements the plugin iframe endpoint (`GET /api/plugins/{name}/ui`), the settings page will appear automatically in the **UI** tab of the TAK-Note plugin detail page in the OTS web UI.
+
+### Via config.yml
+
+Edit `~/ots/config.yml` directly and add the following block.  Only the first three keys are required.
 
 ```yaml
 # --- Required ---
@@ -231,13 +245,19 @@ NoteRequest(req);
 
 ---
 
-## Status Endpoint
+## API Endpoints
 
-```
-GET /api/notehub/status
-```
+All endpoints are registered under the `/api/notehub/` prefix.  No OTS authentication is required.
 
-Returns a JSON object with non-sensitive plugin configuration and polling state.  No authentication required.
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/notehub/ui` | Self-contained settings page (HTML) |
+| `GET` | `/api/notehub/config` | Current `OTS_TAKNOTE_*` config as JSON |
+| `POST` | `/api/notehub/config` | Validate and write `OTS_TAKNOTE_*` keys to `config.yml` |
+| `GET` | `/api/notehub/status` | Non-sensitive runtime status summary as JSON |
+| `POST` | `/api/notehub/webhook` | Notehub push delivery endpoint (requires `OTS_TAKNOTE_WEBHOOK_ENABLED: true`) |
+
+The `POST /api/notehub/config` endpoint accepts a JSON body with any subset of the `OTS_TAKNOTE_*` keys, runs the same validation as the plugin startup check, and updates only those keys in `config.yml` without touching any other OTS settings.  It returns HTTP 422 with an `errors` array if validation fails.
 
 ---
 
