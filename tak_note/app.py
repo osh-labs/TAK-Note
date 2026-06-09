@@ -1,6 +1,6 @@
 """
-OTS-Notehub-Plugin
-==================
+TAK-Note
+========
 OpenTAKServer plugin that ingests Blues Wireless Notecard events from Notehub.io
 and publishes them to connected ATAK/WinTAK/iTAK EUDs as Cursor-on-Target (CoT)
 messages.
@@ -32,7 +32,7 @@ from flask import Blueprint, request, jsonify, current_app
 
 from opentakserver.plugins.Plugin import Plugin
 
-logger = logging.getLogger("OTS.NotehubPlugin")
+logger = logging.getLogger("OTS.TAKNote")
 
 NOTEHUB_API_BASE = "https://api.notefile.net/v1"
 CURSOR_FILENAME = "notehub_cursor.txt"
@@ -43,7 +43,7 @@ CURSOR_FILENAME = "notehub_cursor.txt"
 # ---------------------------------------------------------------------------
 
 blueprint = Blueprint(
-    "ots_notehub_plugin",
+    "tak_note",
     __name__,
     url_prefix="/api/notehub",
 )
@@ -193,7 +193,7 @@ def _event_to_cot_xml(event: dict, cot_type: str, stale_seconds: int) -> str | N
     SubElement(
         detail,
         "_flow-tags_",
-        {"OTS-Notehub-Plugin": _fmt(datetime.now(tz=timezone.utc))},
+        {"TAK-Note": _fmt(datetime.now(tz=timezone.utc))},
     )
 
     return tostring(event_elem, encoding="unicode")
@@ -240,7 +240,7 @@ def notehub_webhook():
         https://<ots-host>/api/notehub/webhook
 
     Include the header:
-        X-Notehub-Secret: <OTS_NOTEHUB_PLUGIN_WEBHOOK_SECRET>
+        X-Notehub-Secret: <OTS_TAKNOTE_WEBHOOK_SECRET>
 
     Notehub will POST either a single event JSON object or a JSON array.
     Each event with valid coordinates is immediately published as CoT.
@@ -251,11 +251,11 @@ def notehub_webhook():
     """
     config = current_app.config
 
-    if not config.get("OTS_NOTEHUB_PLUGIN_WEBHOOK_ENABLED", False):
+    if not config.get("OTS_TAKNOTE_WEBHOOK_ENABLED", False):
         return jsonify({"error": "webhook endpoint not enabled"}), 404
 
     # Shared-secret validation
-    expected = config.get("OTS_NOTEHUB_PLUGIN_WEBHOOK_SECRET", "")
+    expected = config.get("OTS_TAKNOTE_WEBHOOK_SECRET", "")
     if expected:
         provided = request.headers.get("X-Notehub-Secret", "")
         if provided != expected:
@@ -268,8 +268,8 @@ def notehub_webhook():
 
     events = payload if isinstance(payload, list) else [payload]
 
-    cot_type = config.get("OTS_NOTEHUB_PLUGIN_COT_TYPE", "a-f-G-U-C")
-    stale_seconds = int(config.get("OTS_NOTEHUB_PLUGIN_COT_STALE_TIME", 300))
+    cot_type = config.get("OTS_TAKNOTE_COT_TYPE", "a-f-G-U-C")
+    stale_seconds = int(config.get("OTS_TAKNOTE_COT_STALE_TIME", 300))
     rabbit_host = config.get("OTS_RABBITMQ_SERVER_ADDRESS", "127.0.0.1")
     ttl = str(config.get("OTS_RABBITMQ_TTL", "86400000"))
 
@@ -293,14 +293,14 @@ def notehub_status():
     """
     config = current_app.config
     return jsonify({
-        "plugin": "OTS-Notehub-Plugin",
-        "enabled": bool(config.get("OTS_NOTEHUB_PLUGIN_ENABLED", False)),
-        "project_uid": config.get("OTS_NOTEHUB_PLUGIN_PROJECT_UID", ""),
-        "poll_interval_s": config.get("OTS_NOTEHUB_PLUGIN_POLL_INTERVAL", 30),
-        "cot_type": config.get("OTS_NOTEHUB_PLUGIN_COT_TYPE", "a-f-G-U-C"),
-        "stale_seconds": config.get("OTS_NOTEHUB_PLUGIN_COT_STALE_TIME", 300),
-        "notefile_filter": config.get("OTS_NOTEHUB_PLUGIN_NOTEFILE_FILTER", "(all)"),
-        "webhook_enabled": bool(config.get("OTS_NOTEHUB_PLUGIN_WEBHOOK_ENABLED", False)),
+        "plugin": "TAK-Note",
+        "enabled": bool(config.get("OTS_TAKNOTE_ENABLED", False)),
+        "project_uid": config.get("OTS_TAKNOTE_PROJECT_UID", ""),
+        "poll_interval_s": config.get("OTS_TAKNOTE_POLL_INTERVAL", 30),
+        "cot_type": config.get("OTS_TAKNOTE_COT_TYPE", "a-f-G-U-C"),
+        "stale_seconds": config.get("OTS_TAKNOTE_COT_STALE_TIME", 300),
+        "notefile_filter": config.get("OTS_TAKNOTE_NOTEFILE_FILTER", "(all)"),
+        "webhook_enabled": bool(config.get("OTS_TAKNOTE_WEBHOOK_ENABLED", False)),
     }), 200
 
 
@@ -310,12 +310,12 @@ def notehub_status():
 
 class NotehubPlugin(Plugin):
     """
-    OpenTAKServer plugin — Blues Wireless Notehub integration.
+    OpenTAKServer plugin — TAK-Note (Blues Wireless Notehub integration).
 
     Required config.yml keys (~/ots/config.yml):
-        OTS_NOTEHUB_PLUGIN_ENABLED: true
-        OTS_NOTEHUB_PLUGIN_API_KEY: "<notehub-personal-access-token>"
-        OTS_NOTEHUB_PLUGIN_PROJECT_UID: "app:xxxx-xxxx-xxxx-xxxx"
+        OTS_TAKNOTE_ENABLED: true
+        OTS_TAKNOTE_API_KEY: "<notehub-personal-access-token>"
+        OTS_TAKNOTE_PROJECT_UID: "app:xxxx-xxxx-xxxx-xxxx"
 
     See default_config.py for all optional settings.
     """
@@ -344,7 +344,7 @@ class NotehubPlugin(Plugin):
         """
         Called by PluginManager at startup.
 
-        If enabled=True and OTS_NOTEHUB_PLUGIN_ENABLED=True in config,
+        If enabled=True and OTS_TAKNOTE_ENABLED=True in config,
         starts the background polling thread.  The Flask blueprint is
         registered by PluginManager automatically — do not call
         app.register_blueprint() here.
@@ -356,7 +356,7 @@ class NotehubPlugin(Plugin):
         self._cursor_file = os.path.join(ots_dir, CURSOR_FILENAME)
         self._load_cursor()
 
-        if enabled and self._config.get("OTS_NOTEHUB_PLUGIN_ENABLED", False):
+        if enabled and self._config.get("OTS_TAKNOTE_ENABLED", False):
             self._stop_event.clear()
             self._poll_thread = threading.Thread(
                 target=self._poll_loop,
@@ -365,16 +365,16 @@ class NotehubPlugin(Plugin):
             )
             self._poll_thread.start()
             logger.info(
-                "Notehub plugin activated: polling %s every %ds",
-                self._config.get("OTS_NOTEHUB_PLUGIN_PROJECT_UID", "<no project>"),
-                self._config.get("OTS_NOTEHUB_PLUGIN_POLL_INTERVAL", 30),
+                "TAK-Note activated: polling %s every %ds",
+                self._config.get("OTS_TAKNOTE_PROJECT_UID", "<no project>"),
+                self._config.get("OTS_TAKNOTE_POLL_INTERVAL", 30),
             )
         else:
             logger.info(
-                "Notehub plugin loaded (enabled=%s, OTS_NOTEHUB_PLUGIN_ENABLED=%s) "
+                "TAK-Note loaded (enabled=%s, OTS_TAKNOTE_ENABLED=%s) "
                 "— polling not started",
                 enabled,
-                self._config.get("OTS_NOTEHUB_PLUGIN_ENABLED", False),
+                self._config.get("OTS_TAKNOTE_ENABLED", False),
             )
 
     def stop(self) -> None:
@@ -383,27 +383,27 @@ class NotehubPlugin(Plugin):
         if self._poll_thread and self._poll_thread.is_alive():
             self._poll_thread.join(timeout=15)
         self._save_cursor()
-        logger.info("Notehub plugin stopped")
+        logger.info("TAK-Note stopped")
 
     def get_info(self) -> dict | None:
         return {
-            "name": "OTS-Notehub-Plugin",
+            "name": "TAK-Note",
             "polling_active": (
                 self._poll_thread is not None and self._poll_thread.is_alive()
             ),
             "cursor": self._cursor,
-            "project_uid": self._config.get("OTS_NOTEHUB_PLUGIN_PROJECT_UID", ""),
+            "project_uid": self._config.get("OTS_TAKNOTE_PROJECT_UID", ""),
         }
 
     def load_metadata(self) -> dict:
         return {
-            "name": "OTS-Notehub-Plugin",
+            "name": "TAK-Note",
             "description": (
                 "Ingests Blues Wireless Notecard events from Notehub.io "
                 "as CoT messages for ATAK/WinTAK/iTAK EUDs"
             ),
             "version": "1.0.0",
-            "author": "Chris Lee / SEM-SEG",
+            "author": "Chris Lee / OSH-Labs",
             "url": "https://github.com/osh-labs/TAK-Note",
         }
 
@@ -441,11 +441,11 @@ class NotehubPlugin(Plugin):
     def _poll_loop(self) -> None:
         """
         Background daemon thread.  Polls the Notehub events-cursor endpoint
-        at OTS_NOTEHUB_PLUGIN_POLL_INTERVAL seconds and publishes any new
+        at OTS_TAKNOTE_POLL_INTERVAL seconds and publishes any new
         events with valid coordinates as CoT messages.
         """
-        interval = int(self._config.get("OTS_NOTEHUB_PLUGIN_POLL_INTERVAL", 30))
-        logger.info("Notehub poll loop started, interval=%ds", interval)
+        interval = int(self._config.get("OTS_TAKNOTE_POLL_INTERVAL", 30))
+        logger.info("TAK-Note poll loop started, interval=%ds", interval)
 
         while not self._stop_event.is_set():
             try:
@@ -453,12 +453,12 @@ class NotehubPlugin(Plugin):
             except requests.exceptions.RequestException as exc:
                 logger.error("Notehub HTTP request failed: %s", exc)
             except Exception as exc:
-                logger.error("Notehub poll error: %s", exc, exc_info=True)
+                logger.error("TAK-Note poll error: %s", exc, exc_info=True)
 
             # Wait for the configured interval, but wake immediately on stop
             self._stop_event.wait(timeout=interval)
 
-        logger.info("Notehub poll loop exiting")
+        logger.info("TAK-Note poll loop exiting")
 
     def _fetch_and_publish(self) -> None:
         """
@@ -468,19 +468,19 @@ class NotehubPlugin(Plugin):
           3. Publish each CoT to RabbitMQ
           4. Persist the next_cursor for the next cycle
         """
-        project_uid = self._config.get("OTS_NOTEHUB_PLUGIN_PROJECT_UID")
-        api_key = self._config.get("OTS_NOTEHUB_PLUGIN_API_KEY")
-        notefile_filter = self._config.get("OTS_NOTEHUB_PLUGIN_NOTEFILE_FILTER", "")
-        cot_type = self._config.get("OTS_NOTEHUB_PLUGIN_COT_TYPE", "a-f-G-U-C")
-        stale_seconds = int(self._config.get("OTS_NOTEHUB_PLUGIN_COT_STALE_TIME", 300))
+        project_uid = self._config.get("OTS_TAKNOTE_PROJECT_UID")
+        api_key = self._config.get("OTS_TAKNOTE_API_KEY")
+        notefile_filter = self._config.get("OTS_TAKNOTE_NOTEFILE_FILTER", "")
+        cot_type = self._config.get("OTS_TAKNOTE_COT_TYPE", "a-f-G-U-C")
+        stale_seconds = int(self._config.get("OTS_TAKNOTE_COT_STALE_TIME", 300))
         rabbit_host = self._config.get("OTS_RABBITMQ_SERVER_ADDRESS", "127.0.0.1")
         ttl = str(self._config.get("OTS_RABBITMQ_TTL", "86400000"))
-        poll_interval = int(self._config.get("OTS_NOTEHUB_PLUGIN_POLL_INTERVAL", 30))
+        poll_interval = int(self._config.get("OTS_TAKNOTE_POLL_INTERVAL", 30))
 
         if not project_uid or not api_key:
             logger.warning(
-                "Notehub plugin: OTS_NOTEHUB_PLUGIN_PROJECT_UID and "
-                "OTS_NOTEHUB_PLUGIN_API_KEY must both be set in config.yml"
+                "TAK-Note: OTS_TAKNOTE_PROJECT_UID and "
+                "OTS_TAKNOTE_API_KEY must both be set in config.yml"
             )
             return
 
@@ -530,11 +530,11 @@ class NotehubPlugin(Plugin):
 
         if ingested:
             logger.info(
-                "Notehub: published %d / %d events as CoT (cursor=%s)",
+                "TAK-Note: published %d / %d events as CoT (cursor=%s)",
                 ingested, len(events), self._cursor,
             )
         elif events:
             logger.debug(
-                "Notehub: %d events received, none had usable coordinates",
+                "TAK-Note: %d events received, none had usable coordinates",
                 len(events),
             )

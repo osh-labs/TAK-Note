@@ -27,7 +27,7 @@ Notehub.io
         Notehub HTTP Route POSTs to /api/notehub/webhook
                        │
                        ▼
-           OTS-Notehub-Plugin (this plugin)
+           TAK-Note (this plugin)
                        │
                        ▼  json.dumps({"uid": uid, "cot": xml})
            RabbitMQ — cot_controller exchange
@@ -75,17 +75,17 @@ Edit `~/ots/config.yml` and add the following block.  Only the first three keys 
 
 ```yaml
 # --- Required ---
-OTS_NOTEHUB_PLUGIN_ENABLED: true
-OTS_NOTEHUB_PLUGIN_API_KEY: "v2:your-notehub-personal-access-token"
-OTS_NOTEHUB_PLUGIN_PROJECT_UID: "app:2606f411-dea6-44a0-9743-1130f57d77d8"
+OTS_TAKNOTE_ENABLED: true
+OTS_TAKNOTE_API_KEY: "v2:your-notehub-personal-access-token"
+OTS_TAKNOTE_PROJECT_UID: "app:2606f411-dea6-44a0-9743-1130f57d77d8"
 
 # --- Optional (defaults shown) ---
-OTS_NOTEHUB_PLUGIN_POLL_INTERVAL: 30          # seconds between API polls
-OTS_NOTEHUB_PLUGIN_NOTEFILE_FILTER: ""        # e.g. "track.qo,sensor.qo" or leave blank for all
-OTS_NOTEHUB_PLUGIN_COT_TYPE: "a-f-G-U-C"     # CoT type; controls ATAK icon
-OTS_NOTEHUB_PLUGIN_COT_STALE_TIME: 300        # seconds before CoT point goes stale on EUDs
-OTS_NOTEHUB_PLUGIN_WEBHOOK_ENABLED: false     # enable push delivery via Notehub Route
-OTS_NOTEHUB_PLUGIN_WEBHOOK_SECRET: ""         # shared secret for webhook auth
+OTS_TAKNOTE_POLL_INTERVAL: 30          # seconds between API polls
+OTS_TAKNOTE_NOTEFILE_FILTER: ""        # e.g. "track.qo,sensor.qo" or leave blank for all
+OTS_TAKNOTE_COT_TYPE: "a-f-G-U-C"     # CoT type; controls ATAK icon
+OTS_TAKNOTE_COT_STALE_TIME: 300        # seconds before CoT point goes stale on EUDs
+OTS_TAKNOTE_WEBHOOK_ENABLED: false     # enable push delivery via Notehub Route
+OTS_TAKNOTE_WEBHOOK_SECRET: ""         # shared secret for webhook auth
 ```
 
 Restart OTS after editing config.yml:
@@ -101,7 +101,7 @@ sudo systemctl restart opentakserver
 
 Select the type appropriate for your deployment:
 
-| `OTS_NOTEHUB_PLUGIN_COT_TYPE` | ATAK icon                    |
+| `OTS_TAKNOTE_COT_TYPE` | ATAK icon                    |
 |-------------------------------|------------------------------|
 | `a-f-G-U-C`                   | Friendly ground unit         |
 | `a-f-G-U-C-I`                 | Friendly infantry            |
@@ -176,8 +176,8 @@ Use this path when you need sub-30-second latency and your OTS instance has a pu
 ### 1. Enable the webhook in config.yml
 
 ```yaml
-OTS_NOTEHUB_PLUGIN_WEBHOOK_ENABLED: true
-OTS_NOTEHUB_PLUGIN_WEBHOOK_SECRET: "replace-with-a-strong-random-string"
+OTS_TAKNOTE_WEBHOOK_ENABLED: true
+OTS_TAKNOTE_WEBHOOK_SECRET: "replace-with-a-strong-random-string"
 ```
 
 ### 2. Configure a Notehub HTTP Route
@@ -227,7 +227,7 @@ NoteRequest(req);
 
 ### Recommended Notefile
 
-`track.qo` is the conventional Notecard queue for location/tracking data.  Set `OTS_NOTEHUB_PLUGIN_NOTEFILE_FILTER: "track.qo"` to ingest only tracking notes and ignore session / health system files.
+`track.qo` is the conventional Notecard queue for location/tracking data.  Set `OTS_TAKNOTE_NOTEFILE_FILTER: "track.qo"` to ingest only tracking notes and ignore session / health system files.
 
 ---
 

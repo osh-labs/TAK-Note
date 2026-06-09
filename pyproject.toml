@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "OTS-Notehub-Plugin"
+name = "TAK-Note"
 version = "0.0.0"
 description = "Blues Wireless Notehub integration plugin for OpenTAKServer"
 authors = ["Chris Lee <chris@southeastexpeditionmed.com>"]
@@ -8,7 +8,7 @@ readme = "README.md"
 homepage = "https://github.com/osh-labs/TAK-Note"
 repository = "https://github.com/osh-labs/TAK-Note"
 keywords = ["opentakserver", "atak", "blues wireless", "notecard", "notehub", "cot", "tak"]
-packages = [{include = "ots_notehub_plugin"}]
+packages = [{include = "tak_note"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -22,7 +22,7 @@ requests = ">=2.31.0"
 pika = ">=1.3.2"
 
 [tool.poetry.extras]
-# Allow `pip install OTS-Notehub-Plugin[dev]` for standalone development
+# Allow `pip install TAK-Note[dev]` for standalone development
 dev = ["opentakserver", "flask"]
 
 [tool.poetry.dev-dependencies]
@@ -37,7 +37,7 @@ black = ">=24.0"
 # The key is the pip distribution name (lowercase, hyphens → underscores).
 # ---------------------------------------------------------------------------
 [tool.poetry.plugins."opentakserver.plugins"]
-ots_notehub_plugin = "ots_notehub_plugin.app:NotehubPlugin"
+tak_note = "tak_note.app:NotehubPlugin"
 
 # ---------------------------------------------------------------------------
 # Versioning — git tags drive the version number automatically.
@@ -47,7 +47,7 @@ ots_notehub_plugin = "ots_notehub_plugin.app:NotehubPlugin"
 enable = true
 style = "semver"
 
-[tool.poetry-dynamic-versioning.files."ots_notehub_plugin/__init__.py"]
+[tool.poetry-dynamic-versioning.files."tak_note/__init__.py"]
 persistent-substitution = true
 initial-content = """
 # Version placeholder — overwritten by poetry-dynamic-versioning at build time.

@@ -1,5 +1,5 @@
 """
-Tests for OTS-Notehub-Plugin CoT generation and location resolution.
+Tests for TAK-Note CoT generation and location resolution.
 
 Run with:
     pytest tests/test_cot_generation.py -v
@@ -12,7 +12,7 @@ from xml.etree.ElementTree import fromstring
 
 import pytest
 
-from ots_notehub_plugin.app import (
+from tak_note.app import (
     _event_to_cot_xml,
     _resolve_location,
 )
@@ -237,7 +237,7 @@ class TestEventToCotXml:
         detail = root.find("detail")
         flow = detail.find("_flow-tags_")
         assert flow is not None
-        assert "OTS-Notehub-Plugin" in flow.attrib
+        assert "TAK-Note" in flow.attrib
 
     def test_stale_is_after_start(self):
         from datetime import datetime, timezone
