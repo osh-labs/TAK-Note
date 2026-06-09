@@ -110,7 +110,7 @@ Select the type appropriate for your deployment:
 | `a-n-G`                       | Neutral ground               |
 | `b-m-p-s-p-loc`               | Generic sensor/marker        |
 
-Full type schema: [TAK CoT Types](https://github.com/deptofdefense/mil-sym-java/blob/master/renderer/src/main/java/sec/web/proxy/SpotReport.java)
+Full type schema: [CoT Types and MIL-STD-2525](https://freetakteam.github.io/FreeTAKServer-User-Docs/About/architecture/mil_std_2525/)
 
 ---
 
